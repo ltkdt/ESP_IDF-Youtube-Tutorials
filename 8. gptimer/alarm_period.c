@@ -32,14 +32,12 @@ static void IRAM_ATTR isr_handler(void* arg)
     if(press_cnt % 2){
         // Alarm is started from the point we start the button so we start the timer here
         ESP_ERROR_CHECK(gptimer_set_raw_count(gptimer,0));
-        ESP_ERROR_CHECK(gptimer_enable(gptimer));
         ESP_ERROR_CHECK(gptimer_start(gptimer));
     }
     else{
         AlarmState = 0;
         xQueueSendFromISR(StateQueue, &AlarmState, NULL);
         ESP_ERROR_CHECK(gptimer_stop(gptimer));
-        ESP_ERROR_CHECK(gptimer_disable(gptimer));
     }
 }
 
@@ -83,6 +81,8 @@ void app_main(void)
     };
 
     ESP_ERROR_CHECK(gptimer_register_event_callbacks(gptimer, &event_callback, StateQueue));
+
+    ESP_ERROR_CHECK(gptimer_enable(gptimer));
 
     esp_rom_gpio_pad_select_gpio(BUZZER_GPIO);
     gpio_set_direction(BUZZER_GPIO, GPIO_MODE_OUTPUT);
